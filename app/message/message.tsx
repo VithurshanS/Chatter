@@ -4,28 +4,27 @@ import { useState,useEffect, FormEvent } from "react";
 import { messageOutput, SingleMessage } from "@/model/auth";
 import { sendtoM} from "../api/message/sendmessage/route";
 import { reqtoM } from "../api/message/getmessage/route";
-import { NRBody } from "../api/fetchconnection/route";
 
 
 export  function Message({sender,reciever}:{sender:mongoose.Schema.Types.ObjectId,reciever:mongoose.Schema.Types.ObjectId}) {
-    const [chat,setchat] = useState<any>("");
+    const [chat,setchat] = useState<string>("");
     const [messages,setmessages] = useState<SingleMessage[]>();
     const [button,setbutton] = useState<number>(0);
     useEffect(()=>{
         async function fetchdata(){
             const ress = await fetch('/api/message/getmessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sender,reciever} as reqtoM)});
-            const body = await ress.json() as NRBody;
+            const body = await ress.json();
             const dat = body.data as messageOutput;
             setmessages(dat.chats);
         }
         fetchdata();
 
-    },[button]);
+    },[sender,reciever,button]);
 
     async function handleSubmit(event:FormEvent<HTMLFormElement>){
         event.preventDefault();
         const responce = await fetch('/api/message/sendmessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sender,reciever,chat} as sendtoM)});
-        const body = await responce.json() as NRBody;
+        const body = await responce.json();
         console.log(body);
         setbutton((button)=>button+1);
 

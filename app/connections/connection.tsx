@@ -1,7 +1,6 @@
 import { useState,useEffect, FormEvent } from "react";
 import mongoose from "mongoose";
-import { interconnectionoutput,connectioninputdata, user, userli } from "@/model/auth";
-import { NRBody } from "../api/fetchconnection/route";
+import { interconnectionoutput,connectioninputdata, user } from "@/model/auth";
 import { Message } from "../message/message";
 
 export interface fetchconnctionreqdata{
@@ -10,15 +9,14 @@ export interface fetchconnctionreqdata{
 
 export function Connection({id}:{id:mongoose.Schema.Types.ObjectId}) {
     const [connection,setConnection] = useState<user[]>([]);
-    const [button,setbutton] = useState<number>(0);
-    const [fn,setfn] = useState<any>("");
+    const [fn,setfn] = useState<string>();
     const [uss,setuss] = useState<user>();
     const [frie,setfrie] = useState<mongoose.Schema.Types.ObjectId>();
     useEffect(()=>{
         async function fetchConnection(){
             const response = await fetch('/api/fetchconnection',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id} as fetchconnctionreqdata)});
             if(response.status === 200){
-                const data =await response.json() as NRBody;
+                const data =await response.json();
                 const out=data.data as interconnectionoutput;
                 console.log(out);
                 const conn: user[] = out.connection;
@@ -31,20 +29,20 @@ export function Connection({id}:{id:mongoose.Schema.Types.ObjectId}) {
         }
         fetchConnection()
 
-    },[uss]);
+    },[id,uss]);
     
     async function handleSubmit(event: FormEvent<HTMLFormElement>){
         event.preventDefault();
         try{
             const res = await fetch('/api/connection',{method:'POST',headers:{'Content-Type': 'application/json',},body:JSON.stringify({user_id:id,friend_username:fn} as connectioninputdata)});
-            const data = await res.json() as NRBody;
+            const data = await res.json();
             if (res.status===200){
                 setuss(data.data as user);
             }
             return ;
 
-        }catch(err:any){
-            console.log(err.message);
+        }catch{
+            console.log("nothing");
         }
         
         

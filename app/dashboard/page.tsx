@@ -5,7 +5,6 @@ import { useEffect, useState } from 'react';
 import { NextResponse } from 'next/server';
 import mongoose from 'mongoose';
 import { Connection } from '../connections/connection';
-import { NRBody } from '../api/fetchconnection/route';
 
 interface tokenuser {
   id:mongoose.Schema.Types.ObjectId;
@@ -14,7 +13,6 @@ interface tokenuser {
 
 const Dashboard = () => {
   const [user, setUser] = useState<tokenuser>();
-  const [error, setError] = useState('');
 
   useEffect(() => {
     async function fetchUser() {
@@ -28,11 +26,11 @@ const Dashboard = () => {
           throw new Error('Unauthorized: Unable to fetch user details');
         }
         console.log("dededewdewd");
-        const data = await response.json() as NRBody;
+        const data = await response.json();
         console.log("eferef",data.data.id);
         setUser(data.data);
-      } catch (err:any) {
-        setError(err.message);
+      } catch (err) {
+        console.log(err);
       }
     }
 
@@ -40,9 +38,6 @@ const Dashboard = () => {
 
   }, []);
 
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
 
   return (
     <div>

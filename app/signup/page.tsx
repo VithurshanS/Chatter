@@ -1,14 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
-import { NRBody } from '../api/fetchconnection/route';
+import React, { FormEvent, useState } from 'react';
+
 
 const Form = () => {
   const [username, setusername] = useState('');
   const [password, setpassword] = useState('');
 
-  async function handleSubmit(e:any) {
-    e.preventDefault(); // Prevent form reload
+  async function handleSubmit(event:FormEvent<HTMLFormElement>) {
+    event.preventDefault(); // Prevent form reload
 
     if (!username || !password) {
       console.error('email and password are required');
@@ -28,8 +28,8 @@ const Form = () => {
         throw new Error('Failed to register user');
       }
 
-      const data = await response.json() as NRBody;
-      console.log('User registered:');
+      const data = await response.json();
+      console.log('User registered:',data);
     } catch (err) {
       console.error('Error registering user:', err);
     }

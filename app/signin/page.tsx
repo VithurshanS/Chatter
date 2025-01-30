@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { FormEvent, useState } from 'react';
 import {useRouter} from 'next/navigation'
 import { userinputdata } from '@/model/auth';
 
@@ -10,8 +10,8 @@ const Form = () => {
   const [status,setstatus] = useState('');
   const router = useRouter();
 
-  async function handleSubmit(e:any) {
-    e.preventDefault(); // Prevent form reload
+  async function handleSubmit(event:FormEvent<HTMLFormElement>) {
+    event.preventDefault(); // Prevent form reload
 
     if (!username || !password) {
       console.error('username and password are required');

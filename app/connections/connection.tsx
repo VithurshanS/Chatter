@@ -12,6 +12,7 @@ export function Connection({id}:{id:mongoose.Schema.Types.ObjectId}) {
     const [fn,setfn] = useState<string>();
     const [uss,setuss] = useState<user>();
     const [frie,setfrie] = useState<user>();
+    const [button,setbutton] = useState<number>(0);
     useEffect(()=>{
         async function fetchConnection(){
             const response = await fetch('/api/fetchconnection',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id} as fetchconnctionreqdata)});
@@ -29,7 +30,7 @@ export function Connection({id}:{id:mongoose.Schema.Types.ObjectId}) {
         }
         fetchConnection()
 
-    },[id,uss]);
+    },[id,uss,button]);
     
     async function handleSubmit(event: FormEvent<HTMLFormElement>){
         event.preventDefault();
@@ -73,6 +74,12 @@ export function Connection({id}:{id:mongoose.Schema.Types.ObjectId}) {
             Connect
           </button>
         </form>
+        <button
+            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-500 transition duration-200"
+            onClick={()=>{setbutton((button)=>button+1)}}
+          >
+            Refresh Connections
+        </button>
   
         {/* Friends List */}
         <div>

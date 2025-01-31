@@ -16,7 +16,12 @@ export  function Message({sender,reciever}:{sender:mongoose.Schema.Types.ObjectI
             const ress = await fetch('/api/message/getmessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sender,reciever:reciever._id} as reqtoM)});
             const body = await ress.json();
             const dat = body.data as messageOutput;
+            const chatss = dat.chats;
+            if(chatss === messages){
+                return null;
+            }
             setmessages(dat.chats);
+            
         }
         fetchdata();
 
@@ -28,6 +33,7 @@ export  function Message({sender,reciever}:{sender:mongoose.Schema.Types.ObjectI
         const body = await responce.json();
         console.log(body);
         setbutton((button)=>button+1);
+        setchat("");
 
     }
     useEffect(() => {
@@ -69,7 +75,7 @@ export  function Message({sender,reciever}:{sender:mongoose.Schema.Types.ObjectI
             value={chat}
             onChange={(e) => setchat(e.target.value)}
             className="flex-1 p-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Type your message..."
+            placeholder="Type your message"
           />
           <button
             type="submit"
@@ -78,6 +84,12 @@ export  function Message({sender,reciever}:{sender:mongoose.Schema.Types.ObjectI
             Send
           </button>
         </form>
+        <button
+            className="ml-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-500 transition duration-200"
+            onClick={()=>{setbutton((button)=>button+1)}}
+          >
+            refresh
+        </button>
       </div>
     )
 

@@ -75,7 +75,7 @@ export function Connection({id}:{id:mongoose.Schema.Types.ObjectId}) {
           </button>
         </form>
         <button
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-500 transition duration-200"
+            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-500 mt-4 transition duration-200"
             onClick={()=>{setbutton((button)=>button+1)}}
           >
             Refresh Connections

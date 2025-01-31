@@ -3,6 +3,7 @@
 import React, { FormEvent, useState } from 'react';
 import {useRouter} from 'next/navigation'
 import { userinputdata } from '@/model/auth';
+import Link from 'next/link';
 
 const Form = () => {
   const [username, setusername] = useState('');
@@ -82,12 +83,23 @@ const Form = () => {
             </div>
           </div>
 
-          <button
-            type="submit"
-            className="flex w-full justify-center rounded-md bg-black px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-gray-800 hover:shadow-lg transition-all"
-          >
-            🔑 Login
-          </button>
+          <div className='flex flex-row'>
+              <Link
+                href="/signup"
+                className="w-1/4 mr-3 bg-green-800 text-white p-3 rounded-lg mt-4 hover:bg-gray-800 hover:shadow-lg transition-all flex justify-center items-center"
+              >
+                Signup
+              </Link>
+              <button
+                type="submit"
+                className="w-3/4 bg-black text-white p-3 rounded-lg mt-4 hover:bg-gray-800 hover:shadow-lg transition-all flex justify-center items-center"
+              >
+                <span className="mr-2">🔅</span> SignIn
+              </button>
+
+
+
+          </div>
         </form>
       </div>
 

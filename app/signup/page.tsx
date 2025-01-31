@@ -1,8 +1,9 @@
-'use client';
+'use client'
 
+import Link from 'next/link';
 import React, { FormEvent, useState } from 'react';
 
-const Form = () => {
+const Formi = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
@@ -74,16 +75,27 @@ const Form = () => {
             placeholder="Enter your password"
           />
         </div>
+        <div className='flex flex-row'>
+          <button
+            type="submit"
+            className="w-3/4 bg-black text-white p-3 rounded-lg mt-4 hover:bg-gray-800 hover:shadow-lg transition-all flex justify-center items-center"
+          >
+            <span className="mr-2">🔅</span> Sign Up
+          </button>
+          <Link
+            href="/signin"
+            className="w-1/4 ml-3 bg-green-800 text-white p-3 rounded-lg mt-4 hover:bg-gray-800 hover:shadow-lg transition-all flex justify-center items-center"
+          >
+            Login
+          </Link>
 
-        <button
-          type="submit"
-          className="w-full bg-black text-white p-3 rounded-lg mt-4 hover:bg-gray-800 hover:shadow-lg transition-all flex justify-center items-center"
-        >
-          <span className="mr-2">🔅</span> Sign Up
-        </button>
+
+        </div>
+
+        
       </form>
     </div>
   );
 };
 
-export default Form;
+export default Formi;

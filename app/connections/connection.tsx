@@ -10,7 +10,7 @@ export interface fetchconnctionreqdata{
 
 export function Connection({id}:{id:string}) {
     const [connection,setConnection] = useState<friendl[]>([]);
-    const [fn,setfn] = useState<string>();
+    const [fn,setfn] = useState<string>("");
     const [uss,setuss] = useState<friendl>();
     const [frie,setfrie] = useState<friendl>();
     const [conli,setconli] = useState<urm[]>([]);
@@ -31,7 +31,24 @@ export function Connection({id}:{id:string}) {
                 setConnection([]);
             }
         }
-        fetchConnection()
+        fetchConnection();
+        
+        const mChannel = supabase.channel('custom-insert-channel')
+        .on(
+            'postgres_changes',
+            { event: 'INSERT', schema: 'public', table: 'connection' },
+            async (payload) => {
+                console.log('New message inserted!', payload);
+                await fetchConnection();
+            }
+        )
+        .subscribe();
+    
+
+    return () => {
+        supabase.removeChannel(mChannel); // Cleanup on unmount
+    };
+        
         //console.log("connectionsss ",connection);
 
     },[id,uss,button]);
@@ -52,6 +69,7 @@ export function Connection({id}:{id:string}) {
         }
     
         updatecount(); // Initial update on component mount
+
     
         const messageupdateChannel = supabase.channel('custom-update-channel')
             .on(
@@ -145,7 +163,7 @@ export function Connection({id}:{id:string}) {
         {/* Form Section */}
         <form onSubmit={handleSubmit} className="w-full space-y-4">
           <label htmlFor="inp" className="block text-lg font-medium text-gray-700">
-            Email of your friend
+            Username of your friend
           </label>
           <input
             name="inp"

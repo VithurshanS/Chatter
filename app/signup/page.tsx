@@ -2,10 +2,13 @@
 
 import Link from 'next/link';
 import React, { FormEvent, useState } from 'react';
+import {useRouter} from 'next/navigation'
 
 const Formi = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const router = useRouter();
+  const [username, setUsername] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [notify,setnotify] = useState<string>('')
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); // Prevent form reload
@@ -25,11 +28,16 @@ const Formi = () => {
       });
 
       if (response.status !== 200) {
-        throw new Error('Failed to register user');
+        setnotify("signup faild");
+        //throw new Error('Failed to register user');
+        
       }
 
       const data = await response.json();
       console.log('User registered:', data);
+      setnotify("signup successfull");
+      router.push('/signin');
+
     } catch (err) {
       console.error('Error registering user:', err);
     }

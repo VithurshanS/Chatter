@@ -53,7 +53,7 @@ export function Connection({id}:{id:string}) {
     
         updatecount(); // Initial update on component mount
     
-        const messageChannel = supabase.channel('custom-update-channel')
+        const messageupdateChannel = supabase.channel('custom-update-channel')
             .on(
                 'postgres_changes',
                 { event: 'UPDATE', schema: 'public', table: 'message' },
@@ -63,48 +63,59 @@ export function Connection({id}:{id:string}) {
                 }
             )
             .subscribe();
-        
-    
-        return () => {
-            supabase.removeChannel(messageChannel); // Cleanup on unmount
-        };
-    
-    }, [id]); // Runs when `id` changes
-    useEffect(() => {
-        async function updatecount() {
-            const response = await fetch('/api/unreadcount', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id } as fetchconnctionreqdata),
-            });
-            if (response.status === 200) {
-                const data = await response.json();
-                const out = data.data as urm[];
-                setconli(out); // Update unread count
-            } else {
-                setconli([]);
-            }
-        }
-    
-        updatecount(); // Initial update on component mount
-    
-        const messageChannel = supabase.channel('custom-insert-channel')
+        const messageinsertChannel = supabase.channel('custom-insert-channel')
             .on(
                 'postgres_changes',
                 { event: 'INSERT', schema: 'public', table: 'message' },
                 async (payload) => {
                     console.log('New message inserted!', payload);
-                    await updatecount(); // Re-fetch unread count when a new message is inserted
+                    await updatecount();
                 }
             )
             .subscribe();
         
     
         return () => {
-            supabase.removeChannel(messageChannel); // Cleanup on unmount
+            supabase.removeChannel(messageupdateChannel); // Cleanup on unmount
+            supabase.removeChannel(messageinsertChannel);
         };
     
-    }, [id]);
+    }, [id]); // Runs when `id` changes
+    // useEffect(() => {
+    //     async function updatecount() {
+    //         const response = await fetch('/api/unreadcount', {
+    //             method: 'POST',
+    //             headers: { 'Content-Type': 'application/json' },
+    //             body: JSON.stringify({ id } as fetchconnctionreqdata),
+    //         });
+    //         if (response.status === 200) {
+    //             const data = await response.json();
+    //             const out = data.data as urm[];
+    //             setconli(out); // Update unread count
+    //         } else {
+    //             setconli([]);
+    //         }
+    //     }
+    
+    //     updatecount(); // Initial update on component mount
+    
+    //     const messageChannel = supabase.channel('custom-insert-channel')
+    //         .on(
+    //             'postgres_changes',
+    //             { event: 'INSERT', schema: 'public', table: 'message' },
+    //             async (payload) => {
+    //                 console.log('New message inserted!', payload);
+    //                 await updatecount(); // Re-fetch unread count when a new message is inserted
+    //             }
+    //         )
+    //         .subscribe();
+        
+    
+    //     return () => {
+    //         supabase.removeChannel(messageChannel); // Cleanup on unmount
+    //     };
+    
+    // }, [id]);
     
     
     

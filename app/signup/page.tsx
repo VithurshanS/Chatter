@@ -102,6 +102,7 @@ const Formi = () => {
 
         
       </form>
+      <div><p>{notify}</p></div>
     </div>
   );
 };

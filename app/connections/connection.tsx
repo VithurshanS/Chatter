@@ -33,21 +33,6 @@ export function Connection({id}:{id:string}) {
         }
         fetchConnection();
         
-        const mChannel = supabase.channel('custom-insert-channel')
-        .on(
-            'postgres_changes',
-            { event: 'INSERT', schema: 'public', table: 'connection' },
-            async (payload) => {
-                console.log('New message inserted!', payload);
-                await fetchConnection();
-            }
-        )
-        .subscribe();
-    
-
-    return () => {
-        supabase.removeChannel(mChannel); // Cleanup on unmount
-    };
         
         //console.log("connectionsss ",connection);
 

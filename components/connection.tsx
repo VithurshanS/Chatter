@@ -1,7 +1,7 @@
 import { useState, useEffect, FormEvent } from "react";
 import { connectioninputdata } from "@/lib/type";
 import { Message } from "./message";
-import { supabase, urm, userout } from "@/model/auth";
+import { supabase, urm } from "@/model/auth";
 import { userType } from "@/model/auth";
 export interface fetchconnctionreqdata {
     id: string;
@@ -81,7 +81,7 @@ export function Connection({ id }: { id: string }) {
         event.preventDefault();
         try {
             const res = await fetch('/api/connection', { method: 'POST', headers: { 'Content-Type': 'application/json', }, body: JSON.stringify({ user_id: id, friend_username: friendname } as connectioninputdata) });
-            const data = await res.json();
+            await res.json();
             if (res.status === 200) {
                 setbutton((pr) => pr + 1);
             }

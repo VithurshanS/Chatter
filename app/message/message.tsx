@@ -32,7 +32,7 @@ export  function Message({sender,reciever}:{sender:string,reciever:userout}) {
 
 
 
-    },[sender,reciever,messages]);
+    },[sender,reciever]);
     useEffect(()=>{
       async function fetchdata(){
           const ress = await fetch('/api/message/getmessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sender,reciever:reciever.id} as reqtoM)});
@@ -50,7 +50,7 @@ export  function Message({sender,reciever}:{sender:string,reciever:userout}) {
       fetchdata();
 
 
-  },[sender,reciever,messages]);
+  },[sender,reciever]);
     useEffect(()=>{
         const channel = supabase
         .channel('message-listener')
@@ -69,7 +69,7 @@ export  function Message({sender,reciever}:{sender:string,reciever:userout}) {
       return () => {
         supabase.removeChannel(channel);
       };
-    },[sender,reciever,messages])
+    },[sender,reciever])
 
     async function handleSubmit(event:FormEvent<HTMLFormElement>){
         event.preventDefault();

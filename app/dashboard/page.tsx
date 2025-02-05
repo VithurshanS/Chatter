@@ -3,11 +3,10 @@
 
 import { useEffect, useState } from 'react';
 import { NextResponse } from 'next/server';
-import mongoose from 'mongoose';
 import { Connection } from '../connections/connection';
 
 interface tokenuser {
-  id:mongoose.Schema.Types.ObjectId;
+  id:string;
   username:string;
 }
 

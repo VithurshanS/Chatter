@@ -1,191 +1,264 @@
-import connectDatabase from "@/lib/database";
+
+import { interconnectionoutput, messageOutput, modelstatus, SingleMessage, userinputdata,user, connectioninputdata } from "@/lib/type";
 import bcrypt from 'bcryptjs';
+import {Database,Tables,Enums} from '@/lib/supabase';
 
-import mongoose, { Types } from "mongoose";
+import { QueryResult, QueryData, QueryError, PostgrestError } from '@supabase/supabase-js'
 
-const userSchema = new mongoose.Schema({
-    username:String,
-    password:String,
-});
-
-export interface SingleMessage{
-    sender:mongoose.Schema.Types.ObjectId;
-    timestamp:Date;
-    message:string;
-}
-
-export interface messageOutput{
-    _id?:mongoose.Schema.Types.ObjectId;
-    friends:string;
-    chats:SingleMessage[];
-
-}
-
-const connectionSchema = new mongoose.Schema({
-    id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, 
-    connection: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-});
-
-const messageSchema = new mongoose.Schema({
-    friends:{type: String, required: true},
-    chats:[{
-        sender:{ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true},
-        timestamp:{type:Date,default:Date.now},
-        message:{type:String,required:true},
-    }]
-})
-
-function keyCombiner(key1:mongoose.Schema.Types.ObjectId,key2:mongoose.Schema.Types.ObjectId){
-    const combinedstring = [key1,key2].sort();
-    return combinedstring.join('_');
-}
-async function addMessage(sender:mongoose.Schema.Types.ObjectId,reciever:mongoose.Schema.Types.ObjectId,chat:string) {
-    const message_id = keyCombiner(sender,reciever);
-    connectDatabase();
-    const message = mongoose.models.Message || mongoose.model('Message',messageSchema);
-    const messageHistory = await message.findOne({friends:message_id}) as messageOutput;
-    if (messageHistory===null){
-        const res:modelstatus={statuscode:400,data:null,message:"connection doesnt exists"};
-        return res;
-    }
-    const chatobj ={sender,timestamp:new Date(),message:chat} as SingleMessage
-    const updatedMessage = await message.findOneAndUpdate({friends:message_id},{$addToSet:{chats:chatobj}},{new:true,upsert:true}) as messageOutput;
-
-    const res:modelstatus = {statuscode:200,data:updatedMessage,message:"successfully sent"};
-    return res;
-}
-async function getMessage(sender:mongoose.Schema.Types.ObjectId,reciever:mongoose.Schema.Types.ObjectId){
-    connectDatabase();
-    const message_id = keyCombiner(sender,reciever);
-    const message = mongoose.models.Message || mongoose.model('Message',messageSchema);
-    const messageHistory = await message.findOne({friends:message_id}) as messageOutput;
-    if (messageHistory===null){
-        const res:modelstatus={statuscode:400,data:null,message:"connection doesnt exists"};
-        return res;
-    }
-    const res:modelstatus = {statuscode:200,data:messageHistory,message:"got the chats"}
-    return res;
-
-}
-
-export interface userinputdata {
-    username:string;
-    password:string;
-};
-export interface connectioninputdata{
-    user_id:mongoose.Schema.Types.ObjectId;
-    friend_username:string;
-}
-
-export interface modelstatus{
-    statuscode:number;
-    data:any;
-    message:string;
-
-}
-
-
-export interface userli{
-    _id:mongoose.Schema.Types.ObjectId;
-    username:string;
-    password:string;
-}
-
-
-export interface user{
-    _id:mongoose.Schema.Types.ObjectId;
-    username:string;
-    password:string;
-}
-
-export interface connectionoutput{
-    _id?:mongoose.Schema.Types.ObjectId;
-    id:mongoose.Schema.Types.ObjectId;
-    connection:mongoose.Schema.Types.ObjectId[];
-}
-
-export interface interconnectionoutput{
-    _id?:mongoose.Schema.Types.ObjectId;
-    id:mongoose.Schema.Types.ObjectId;
-    connection:user[];
-}
-
+import { createClient } from '@supabase/supabase-js'
+import { table } from "console";
+import mongoose from "mongoose";
+const supabaseUrl = 'https://gbqsxzehsptjfjqywkou.supabase.co'
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdicXN4emVoc3B0amZqcXl3a291Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg0MzY4ODcsImV4cCI6MjA1NDAxMjg4N30.my2zafchafD2nxyhkPsPAuvTa-giBbRKATf1Oj3rEJ0";
+const supabase = createClient<Database>(supabaseUrl, supabaseKey)
+export {supabase};
 async function registerUser(registerdata:userinputdata){
-    await connectDatabase();
     const {username} = registerdata;
-    const user = mongoose.models.User || mongoose.model('User', userSchema);
-    const getuser =await user.findOne({'username':username}) as user;
-    if(getuser != null){
-        const ress:modelstatus = {statuscode:400,data:null,message:"username is already exists"};
+    let {data: User,error} = await supabase.from('user').select('id').eq('username',username);
+    if(error){
+        const ress:modelstatus = {statuscode:400,data:"s",message:"username is already exists"};
         return ress;
     }
     const hashedPassword = await bcrypt.hash(registerdata.password,10);
     registerdata.password = hashedPassword;
-    const newUser = new user(registerdata);
-    const saveduser:user = await newUser.save();
-    const connection  = mongoose.models.Connection || mongoose.model('Connection', connectionSchema);
-    const newConnection = new connection({'id':saveduser._id,'connection':[]});
-    await newConnection.save();
-    const resss:modelstatus = {statuscode:200,data:null,message:"user registered successfully"}
+    const {data:newuser,error:inserterror} = await supabase.from('user').insert([registerdata]);
+    const resss:modelstatus = {statuscode:200,data:"su",message:"user registered successfully"}
     return resss;
-
-
 }
 
+
+
 async function getUser(data:userinputdata){
-    await connectDatabase();
     const {username,password} = data;
-    const user =mongoose.models.User || mongoose.model('User', userSchema);
-    const getser:user|null =await user.findOne({'username':username});
+    const userquery =  supabase.from('user').select('*').eq('username',username);
+    type userss = QueryData<typeof userquery>;
+    const {data:getser,error} = await userquery;
     if(getser===null){
-        const res:modelstatus = {statuscode:400,data:null,message:"can't find the user"};
+        const res:modelstatus = {statuscode:400,data:"su",message:"can't find the user"};
         console.log("nullgoted");
         return res;
     }
-    const auth = await bcrypt.compare(password,getser.password);
+
+    const auth = await bcrypt.compare(password,getser[0].password);
 
     if(auth){
-        const res:modelstatus = {statuscode:200,data:getser,message:"fetched the user"};
+        const res:modelstatus = {statuscode:200,data:getser[0],message:"fetched the user"};
         return res;
     }
-    const res:modelstatus = {statuscode:300,data:null,message:"invalid credentials"};
+    const res:modelstatus = {statuscode:300,data:"su",message:"invalid credentials"};
     console.log("fucked");
     return res;
-    
-
 }
 
+//----------------------------------------------------------------------------------------------------------------------------------------------
+export type userout = Tables<'user'>;
+
 async function addConnection(data:connectioninputdata){
-    await connectDatabase();
     const {user_id,friend_username} = data;
-    const user = mongoose.models.User || mongoose.model('User', userSchema);
-    const friend:user|null = await user.findOne({'username':friend_username});
+    const {data:friend,error:frd_err} = await supabase.from('user').select('*').eq('username',friend_username);
     if(friend === null){
         console.log("nofriend");
-        const res:modelstatus = {statuscode:400,data:null,message:"no such friend found"};
+        const res:modelstatus = {statuscode:400,data:"su",message:"no such friend found"};
         return res;
     }
-    const conn = mongoose.models.Connection || mongoose.model('Connection', connectionSchema);
-    await conn.findOneAndUpdate({'id':user_id},{$addToSet:{connection:friend._id}},{new:true,upsert:true});
-    await conn.findOneAndUpdate({'id':friend._id},{$addToSet:{connection:user_id}},{new:true,upsert:true});
-    const message = mongoose.models.Message || mongoose.model('Message',messageSchema);
-    const newmessage =await  message.findOne({'friends':keyCombiner(user_id,friend._id)}) ||await new message({'friends':keyCombiner(user_id,friend._id),'chats':[]}).save();
-    const ress:modelstatus = {statuscode:200,data:friend as user,message:"connection added successfull"};
+    const {data:resu,error:er} = await supabase.from('connection').select('id').match({'creator':user_id ,'friend':friend[0].id});
+    if(resu!=null && resu.length===0){
+        const {data:d1,error:e1} = await supabase.from('connection').insert([{'creator':user_id,'friend':friend[0].id},{'creator':friend[0].id,'friend':user_id}]);
+
+    }
+    
+    const ress:modelstatus = {statuscode:200,data:friend[0],message:"connection added successfull"};
     return ress;
 }
 
-async function getConnection(data:mongoose.Schema.Types.ObjectId){
-    await connectDatabase();
+export type friendlist = {
+    frien:Tables<'user'> ;
+};
+
+export type friendl = Tables<'user'>;
+
+export interface modell{
+    statuscode:number;
+    data:friendl;
+    message:string;
+  
+  }
+
+
+
+async function getConnection(data:string){
+
     const user_id = data;
-    //const user = mongoose.models.User || mongoose.model('User', userSchema);
-    //const friend = await user.findOne({'email':connect_mail});
-    //if(friend === null){
-    //    return 0;
-    //}
-    const conn = mongoose.models.Connection || mongoose.model('Connection', connectionSchema);
-    const ee:interconnectionoutput = await conn.findOne({'id':user_id},{connection:1,_id:0}).populate('connection');
-    const res:modelstatus = {statuscode:200,data:ee,message:"connection got successfully"};
+    const {data: conns,error} = await supabase.from('connection').select('user!connection_friend_fkey!id(*)').eq('creator',user_id);
+    if(error){
+        console.log("fuvckere",error);
+    }
+    const listu:friendl[] = [];
+    conns?.map((ele:any)=>{listu.push(ele.user as friendl)})
+    const res:modelstatus = {statuscode:200,data:listu,message:"connection got successfully"};
     return res;
 }
 
-export {registerUser,getUser,addConnection,getConnection,addMessage,getMessage};
+export interface urm {
+    friend:string|null;
+    URMC:number;
+}
+
+export async function getsenderandcount(data:string){
+    const user_id = data;
+    const {data: conns,error} = await supabase.from('connection').select('friend,URMC').eq('creator',user_id);
+    if(error){
+       // console.log("------------------------------------------------------------------------------------------------------------");
+    }
+    const listu:urm[] = [];
+    conns?.map((ele:any)=>{listu.push(ele as urm)})
+    //console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++",listu
+
+    //);
+    const res:modelstatus = {statuscode:200,data:listu,message:"connection got successfully"};
+    return res;
+
+}
+
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+async function addMessage(sender:string,reciever:string,chat:string) {
+    
+    const {data:con_id,error:err} = await supabase.from('connection').select('id').match({'creator':sender,'friend':reciever});
+    if(err){
+        console.log("error in insert message");
+    }
+    if(con_id!=null){
+        const {data:sum,error:er} = await supabase.from('message').insert([{'connection_id':con_id[0].id,'message':chat}])
+        const res1:modelstatus = {statuscode:200,data:"su",message:"successfully sent"};
+            return res1;
+    }
+
+    const res:modelstatus = {statuscode:200,data:"su",message:"cant find connection"};
+    return res;
+    
+    //const updatedMessage = await message.findOneAndUpdate({friends:message_id},{$addToSet:{chats:chatobj}},{new:true,upsert:true}) as messageOutput;
+
+    
+}
+export type messageout = Tables<'message'>;
+export interface MOUT {
+    sender_connection_id:number;
+    reciever_connection_id:number;
+    messages:messageout[];
+
+}
+async function getMessage(sender:string,reciever:string){
+    const {data:sender_side,error:s_err} = await supabase.from('connection').select('id').match({'creator':sender,'friend':reciever});
+    const {data:reciever_side,error:r_err} = await supabase.from('connection').select('id').match({'creator':reciever,'friend':sender});
+    
+    if(sender_side!=null && reciever_side!=null){
+        const {data:messages,error:msg_err} = await supabase.from('message').select('*').in('connection_id',[sender_side[0].id,reciever_side[0].id])
+        if(msg_err){
+            console.log("you fuckedup",msg_err);
+        }
+        console.log("current",messages);
+        const mout:messageout[] = [];
+        if(messages!=null){
+            messages.map((ele)=>{mout.push(ele)})
+        }
+        
+        const result:MOUT ={
+            sender_connection_id:sender_side[0].id,
+            reciever_connection_id:reciever_side[0].id,
+            messages:mout
+        };
+        console.log("cur3",result);
+        const res:modelstatus = {statuscode:200,data:result,message:"got the chats"};
+        return res;
+
+    }
+    
+
+    
+    // const message = mongoose.models.Message || mongoose.model('Message',messageSchema);
+
+    const resi:modelstatus = {statuscode:400,data:"su",message:"error when reciev message from db"}
+    return resi;
+
+}
+
+async function readerrenderMessage(sender:string,reciever:string){
+    const {data:sender_side,error:s_err} = await supabase.from('connection').select('id').match({'creator':sender,'friend':reciever});
+    const {data:reciever_side,error:r_err} = await supabase.from('connection').select('id').match({'creator':reciever,'friend':sender});
+    
+    if(sender_side!=null && reciever_side!=null){
+        const {data:messages,error:msg_err} = await supabase.rpc("advfetcher", {
+            _sender_connection: sender_side[0].id,
+            _receiver_connection: reciever_side[0].id,
+          });
+        if(msg_err){
+            console.log("you fuckedup",msg_err);
+        }
+        console.log("current","+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+        const mout:messageout[] = [];
+        if(messages!=null){
+            messages.map((ele)=>{mout.push(ele)})
+        }
+        
+        const result:MOUT ={
+            sender_connection_id:sender_side[0].id,
+            reciever_connection_id:reciever_side[0].id,
+            messages:mout
+        };
+        console.log("cur3",result);
+        const res:modelstatus = {statuscode:200,data:result,message:"got the chats"};
+        return res;
+
+    }
+    
+
+    
+    // const message = mongoose.models.Message || mongoose.model('Message',messageSchema);
+
+    const resi:modelstatus = {statuscode:400,data:"su",message:"error when reciev message from db"}
+    return resi;
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export {registerUser,getUser,addConnection,getConnection,addMessage,getMessage,readerrenderMessage};

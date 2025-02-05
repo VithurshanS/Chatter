@@ -2,7 +2,7 @@
 
 import React, { FormEvent, useState } from 'react';
 import {useRouter} from 'next/navigation'
-import { userinputdata } from '@/model/auth';
+import { userinputdata } from '@/lib/type';
 import Link from 'next/link';
 
 const Form = () => {

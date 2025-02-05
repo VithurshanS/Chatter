@@ -1,26 +1,29 @@
 import { useState,useEffect, FormEvent } from "react";
-import mongoose from "mongoose";
-import { interconnectionoutput,connectioninputdata, user } from "@/model/auth";
-import { Message } from "../message/message";
 
+import {connectioninputdata} from "@/lib/type";
+import { Message } from "../message/message";
+import { supabase, urm, userout } from "@/model/auth";
+import { friendl } from "@/model/auth";
 export interface fetchconnctionreqdata{
-    id:mongoose.Schema.Types.ObjectId;
+    id:string;
 }
 
-export function Connection({id}:{id:mongoose.Schema.Types.ObjectId}) {
-    const [connection,setConnection] = useState<user[]>([]);
+export function Connection({id}:{id:string}) {
+    const [connection,setConnection] = useState<friendl[]>([]);
     const [fn,setfn] = useState<string>();
-    const [uss,setuss] = useState<user>();
-    const [frie,setfrie] = useState<user>();
+    const [uss,setuss] = useState<friendl>();
+    const [frie,setfrie] = useState<friendl>();
+    const [conli,setconli] = useState<urm[]>([]);
     const [button,setbutton] = useState<number>(0);
     useEffect(()=>{
         async function fetchConnection(){
             const response = await fetch('/api/fetchconnection',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id} as fetchconnctionreqdata)});
             if(response.status === 200){
                 const data =await response.json();
-                const out=data.data as interconnectionoutput;
-                console.log(out);
-                const conn: user[] = out.connection;
+                const out=data.data ;
+                //console.log("outi",out[0]);
+                //console.log(out);
+                const conn: friendl[] = out;
 
                 setConnection(conn);
             }
@@ -29,8 +32,81 @@ export function Connection({id}:{id:mongoose.Schema.Types.ObjectId}) {
             }
         }
         fetchConnection()
+        //console.log("connectionsss ",connection);
 
     },[id,uss,button]);
+    useEffect(() => {
+        async function updatecount() {
+            const response = await fetch('/api/unreadcount', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id } as fetchconnctionreqdata),
+            });
+            if (response.status === 200) {
+                const data = await response.json();
+                const out = data.data as urm[];
+                setconli(out); // Update unread count
+            } else {
+                setconli([]);
+            }
+        }
+    
+        updatecount(); // Initial update on component mount
+    
+        const messageChannel = supabase.channel('custom-update-channel')
+            .on(
+                'postgres_changes',
+                { event: 'UPDATE', schema: 'public', table: 'message' },
+                async (payload) => {
+                    console.log('New message inserted!', payload);
+                    await updatecount(); // Re-fetch unread count when a new message is inserted
+                }
+            )
+            .subscribe();
+        
+    
+        return () => {
+            supabase.removeChannel(messageChannel); // Cleanup on unmount
+        };
+    
+    }, [id]); // Runs when `id` changes
+    useEffect(() => {
+        async function updatecount() {
+            const response = await fetch('/api/unreadcount', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id } as fetchconnctionreqdata),
+            });
+            if (response.status === 200) {
+                const data = await response.json();
+                const out = data.data as urm[];
+                setconli(out); // Update unread count
+            } else {
+                setconli([]);
+            }
+        }
+    
+        updatecount(); // Initial update on component mount
+    
+        const messageChannel = supabase.channel('custom-insert-channel')
+            .on(
+                'postgres_changes',
+                { event: 'INSERT', schema: 'public', table: 'message' },
+                async (payload) => {
+                    console.log('New message inserted!', payload);
+                    await updatecount(); // Re-fetch unread count when a new message is inserted
+                }
+            )
+            .subscribe();
+        
+    
+        return () => {
+            supabase.removeChannel(messageChannel); // Cleanup on unmount
+        };
+    
+    }, [id]);
+    
+    
     
     async function handleSubmit(event: FormEvent<HTMLFormElement>){
         event.preventDefault();
@@ -38,7 +114,7 @@ export function Connection({id}:{id:mongoose.Schema.Types.ObjectId}) {
             const res = await fetch('/api/connection',{method:'POST',headers:{'Content-Type': 'application/json',},body:JSON.stringify({user_id:id,friend_username:fn} as connectioninputdata)});
             const data = await res.json();
             if (res.status===200){
-                setuss(data.data as user);
+                setuss(data.data as userout);
             }
             return ;
 
@@ -85,11 +161,16 @@ export function Connection({id}:{id:mongoose.Schema.Types.ObjectId}) {
         <div>
             <div className="mt-6 w-full">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Connected Users</h2>
-            {connection.length > 0 ? (
+            {connection?.length > 0 ? (
                 <div className="space-y-3">
-                {connection.map((element) => (
-                    <div key={element._id.toString()} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg shadow-md">
-                    <span className="text-gray-900 font-medium">{element.username}</span>
+                {connection.map((element:friendl) => (
+                    <div key={element.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg shadow-md">
+                    <span className="text-gray-900 font-medium">{element.username}   {conli?.length
+  ? conli.find((e: urm) => e && e.friend === element.id)?.URMC || "0"
+  : "0"}
+
+
+                    </span>
                     <button
                         onClick={() => setfrie(element)}
                         className="bg-green-600 text-white px-3 py-1 rounded-md hover:bg-green-500 transition duration-200"

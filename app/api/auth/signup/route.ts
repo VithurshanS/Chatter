@@ -1,6 +1,6 @@
 import { registerUser } from "@/model/auth";
 import { NextResponse,NextRequest } from 'next/server';
-import type { userinputdata,modelstatus } from "@/model/auth";
+import type { userinputdata,modelstatus } from "@/lib/type";
 
 
 export async function POST(req:NextRequest){

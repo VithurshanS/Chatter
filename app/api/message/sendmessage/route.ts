@@ -1,10 +1,10 @@
-import { addMessage, modelstatus } from "@/model/auth";
+import { addMessage,  } from "@/model/auth";
+import { modelstatus } from "@/lib/type";
 import { NextRequest,NextResponse } from "next/server";
-import mongoose from "mongoose";
 
 export interface sendtoM{
-    sender:mongoose.Schema.Types.ObjectId;
-    reciever:mongoose.Schema.Types.ObjectId;
+    sender:string;
+    reciever:string;
     chat:string;
 }
 export async function POST(req:NextRequest){

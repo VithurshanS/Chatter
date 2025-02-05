@@ -1,13 +1,15 @@
-import { getUser} from "@/model/auth";
+import { getUser, modell} from "@/model/auth";
 import jwt from 'jsonwebtoken';
 import { NextResponse,NextRequest } from 'next/server';
-import type { userinputdata,modelstatus } from "@/model/auth";
-import mongoose from "mongoose";
+import type { userinputdata } from "@/lib/type";
 
 interface tokendata{
-    id:mongoose.Schema.Types.ObjectId;
+    id:string;
     username:string;
 }
+
+
+
 
 export async function POST(req:NextRequest){
     try{
@@ -15,12 +17,12 @@ export async function POST(req:NextRequest){
         if(!username || !password){
             return NextResponse.json({message:'email and password are required',data:null,success:false},{status:400});
         }
-        const result = await getUser({username,password}) as modelstatus;
+        const result = await getUser({username,password}) as modell;
         console.log(result.statuscode,"ddd");
         if(result.statuscode === 200){
             //console.log("login succeed")
             const tokenData:tokendata = {
-                id:result.data._id,
+                id:result.data.id,
                 username:result.data.username,
             }
             const token = await jwt.sign(tokenData,"vithurshansivan",{expiresIn:'2h'});

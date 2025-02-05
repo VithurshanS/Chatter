@@ -1,6 +1,7 @@
-import { getMessage } from "@/model/auth";
+import {  readerrenderMessage } from "@/model/auth";
 import { modelstatus } from "@/lib/type";
 import { NextRequest,NextResponse } from "next/server";
+
 import { MOUT } from "@/model/auth";
 
 
@@ -13,7 +14,7 @@ export interface reqtoM{
 export async function POST(req:NextRequest){
     const body = await req.json() as reqtoM;
     const{sender,reciever} = body;
-    const res = await getMessage(sender,reciever) as modelstatus;
+    const res = await readerrenderMessage(sender,reciever) as modelstatus;
     const ee = res.data as MOUT;
     console.log("cur4",ee);
     if(res.statuscode === 200){

@@ -33,24 +33,25 @@ export  function Message({sender,reciever}:{sender:string,reciever:userout}) {
 
 
     },[sender,reciever]);
-    useEffect(()=>{
-      async function fetchdata(){
-          const ress = await fetch('/api/message/getmessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sender,reciever:reciever.id} as reqtoM)});
-          const body = await ress.json();
-          const dat = body.data as MOUT;
-          const chatss = dat.messages;
-          if(chatss === messages){
-              return null;
-          }
-          setmessages(chatss);
-          setrcid(dat.reciever_connection_id);
-          setscid(dat.sender_connection_id);
-          
+    async function fetchdata(){
+      const ress = await fetch('/api/message/getmessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sender,reciever:reciever.id} as reqtoM)});
+      const body = await ress.json();
+      const dat = body.data as MOUT;
+      const chatss = dat.messages;
+      if(chatss === messages){
+          return null;
       }
-      fetchdata();
+      setmessages(chatss);
+      setrcid(dat.reciever_connection_id);
+      setscid(dat.sender_connection_id);
+      
+  }
+  //   useEffect(()=>{
+
+  //     fetchdata();
 
 
-  },[sender,reciever]);
+  // },[sender,reciever]);
     useEffect(()=>{
         const channel = supabase
         .channel('message-listener')
@@ -69,13 +70,14 @@ export  function Message({sender,reciever}:{sender:string,reciever:userout}) {
       return () => {
         supabase.removeChannel(channel);
       };
-    },[sender,reciever])
+    },[sender,reciever,messages])
 
     async function handleSubmit(event:FormEvent<HTMLFormElement>){
         event.preventDefault();
         const responce = await fetch('/api/message/sendmessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sender,reciever:reciever.id,chat} as sendtoM)});
         const body = await responce.json();
         console.log(body);
+        fetchdata();
         setchat("");
 
     }
@@ -104,10 +106,12 @@ export  function Message({sender,reciever}:{sender:string,reciever:userout}) {
               >
                 <p className="text-sm">{element.message}</p>
                 <p className="text-xs text-gray-300 mt-1">{new Date(element.created_at).toLocaleTimeString()}</p>
+                
               </div>
+              <div ref={messagesEndRef}/>
             </div>
           ))}
-          <div ref={messagesEndRef} />
+          
         </div>
   
         {/* Message Input */}

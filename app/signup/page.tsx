@@ -11,7 +11,7 @@ const Formi = () => {
   const [notify,setnotify] = useState<string>('')
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault(); // Prevent form reload
+    event.preventDefault();
 
     if (!username || !password) {
       console.error('Username and password are required');

@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { NextResponse } from 'next/server';
-import { Connection } from '../connections/connection';
+import { Connection } from '../../components/connection';
 
 interface tokenuser {
   id:string;

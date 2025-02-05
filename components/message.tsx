@@ -1,7 +1,7 @@
 
 import { useState,useEffect, FormEvent, useRef } from "react";
-import { sendtoM} from "../api/message/sendmessage/route";
-import { reqtoM } from "../api/message/getmessage/route";
+import { sendtoM} from "../app/api/message/sendmessage/route";
+import { reqtoM } from "../app/api/message/getmessage/route";
 import { userout } from "@/model/auth";
 import { messageout,MOUT } from "@/model/auth";
 import { supabase } from "@/model/auth";
@@ -34,25 +34,7 @@ export  function Message({sender,reciever}:{sender:string,reciever:userout}) {
 
 
     },[sender,reciever,changer]);
-  //   async function fetchdata(){
-  //     const ress = await fetch('/api/message/getmessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sender,reciever:reciever.id} as reqtoM)});
-  //     const body = await ress.json();
-  //     const dat = body.data as MOUT;
-  //     const chatss = dat.messages;
-  //     if(chatss === messages){
-  //         return null;
-  //     }
-  //     setmessages(chatss);
-  //     setrcid(dat.reciever_connection_id);
-  //     setscid(dat.sender_connection_id);
-      
-  // }
-  //   useEffect(()=>{
-
-  //     fetchdata();
-
-
-  // },[sender,reciever]);
+  
     useEffect(()=>{
         const channel = supabase
         .channel('message-listener')

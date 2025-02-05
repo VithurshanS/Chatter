@@ -1,7 +1,7 @@
 import { getsenderandcount, urm } from "@/model/auth";
 import { modelstatus} from "@/lib/type";
 import { NextRequest,NextResponse } from "next/server";
-import { fetchconnctionreqdata } from "@/app/connections/connection";
+import { fetchconnctionreqdata } from "@/components/connection";
 
 
 export async function POST(req:NextRequest) {
